@@ -6,7 +6,10 @@ spring:
     console:
       enabled: true
       path: /h2
-
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create
   datasource:
     url: jdbc:h2:file:~/test
     username: sa
@@ -14,10 +17,9 @@ spring:
     driverClassname: org.h2.Driver
 
 
+jwt:
+  secret: conunSecretKey
+  expiration: 86400000
+  auth:
+    facebook: https://graph.facebook.com/me?fields=email,first_name,last_name&access_token=%s
 
-
-  jwt:
-    secret: snstravel
-    expiration: 86400000
-    auth:
-      facebook: https://graph.facebook.com/me?fields=email,first_name,last_name&access_token=%s

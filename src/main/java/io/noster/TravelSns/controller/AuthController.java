@@ -10,15 +10,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private AuthServiceImpl authService;
+    final AuthServiceImpl authServiceimpl;
+
+    public AuthController(AuthServiceImpl authServiceimpl) {
+        this.authServiceimpl = authServiceimpl;
+    }
+
 
     @PostMapping("login/facebook")
-    public ResponseEntity<?> facebook(@RequestBody @Valid FacebookAuthModel facebookAuthModel) {
-        return authService.facebook(facebookAuthModel);
+    public ResponseEntity<?> facebook(@RequestBody  FacebookAuthModel facebookAuthModel) {
+        return authServiceimpl.facebook(facebookAuthModel);
     }
 }

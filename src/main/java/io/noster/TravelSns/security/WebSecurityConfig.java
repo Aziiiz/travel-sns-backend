@@ -1,5 +1,6 @@
 package io.noster.TravelSns.security;
 
+import io.noster.TravelSns.security.jwt.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -21,16 +23,15 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
     @Bean
-    public JwtAuthorizationFilter jwtAuthorizationFilter()  {
-        return new JwtAuthorizationFilter();
+    public JwtAuthorizationFilter jwtAuthorizationFilter()  throws Exception {
+        return new JwtAuthorizationFilter(authenticationManager());
     }
 
 
     @Bean
-    public JwTokenProvider jwTokenProvider(){
-        return new JwTokenProvider();
+    public JwtTokenProvider jwtTokenProvider(){
+        return new JwtTokenProvider();
     }
-
     @Bean
     public WebClient webClient(){
         return WebClient.create();
