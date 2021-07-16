@@ -22,4 +22,5 @@ jwt:
   expiration: 86400000
   auth:
     facebook: https://graph.facebook.com/me?fields=email,first_name,last_name&access_token=%s
+    google: https://www.googleapis.com/oauth2/v1/userinfo?access_token=%s
 

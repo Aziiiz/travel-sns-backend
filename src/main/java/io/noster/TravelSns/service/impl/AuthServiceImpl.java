@@ -20,7 +20,6 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Optional;
-import java.util.Properties;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -36,6 +35,9 @@ public class AuthServiceImpl implements AuthService {
 
     @Value("${jwt.auth.facebook}")
     private String facebookAuthUrl;
+
+    @Value("${jwt.auth.google}")
+    private String googleAuthUrl;
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
 
     private final String TOKEN_PREFIX  = "Bearer ";
@@ -69,6 +71,45 @@ public class AuthServiceImpl implements AuthService {
                 return ResponseEntity.badRequest().body("previously logged in with different method");
             }
 
+            UserPrincipal userPrincipal = new UserPrincipal(user);
+            String jwt = tokenProvider.generateTokenWithPrinciple(userPrincipal);
+            return ResponseEntity.ok(new LoginResponse(TOKEN_PREFIX + jwt));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> google(FacebookAuthModel facebookAuthModel) {
+        logger.info("Print goolge token" + facebookAuthModel.getAuthToken());
+
+        String googleUrl = String.format(googleAuthUrl, facebookAuthModel.getAuthToken());
+        GoogleUserModel googleUserModel = webClient.get().uri(googleUrl).retrieve()
+            .onStatus(HttpStatus::isError, clientResponse -> {
+                throw new ResponseStatusException(clientResponse.statusCode(), "google login error");
+            })
+            .bodyToMono(GoogleUserModel.class)
+            .block();
+        logger.info("Print goolge user " + googleUserModel.getEmail());
+        logger.info("Print goolge user " + googleUserModel.getFirstName());
+        logger.info("Print goolge user " + googleUserModel.getLastName());
+
+        final Optional<User> userOptional = userMapper.findByEmail(googleUserModel.getEmail());
+
+        if(userOptional.isEmpty()) {
+            final User user = new User(googleUserModel.getEmail(), new RandomString(10).nextString(), LoginMethodEnum.GOOGLE, "ROLE_USER");
+            userMapper.save(user);
+            final UserPrincipal userPrincipal = new UserPrincipal(user);
+            logger.info("Print goolge user " + userPrincipal.getUsername());
+            String jwt = tokenProvider.generateToken(userPrincipal);
+            URI location = ServletUriComponentsBuilder
+                    .fromCurrentContextPath().path("/api/v1/user/{username}")
+                    .buildAndExpand(googleUserModel.getFirstName()).toUri();
+
+            return ResponseEntity.created(location).body(new LoginResponse(TOKEN_PREFIX + jwt));
+        }else {
+            final User user = userOptional.get();
+            if((user.getLoginMethodEnum() != LoginMethodEnum.GOOGLE)) {
+                return ResponseEntity.badRequest().body("previously logged in with different method");
+            }
             UserPrincipal userPrincipal = new UserPrincipal(user);
             String jwt = tokenProvider.generateTokenWithPrinciple(userPrincipal);
             return ResponseEntity.ok(new LoginResponse(TOKEN_PREFIX + jwt));

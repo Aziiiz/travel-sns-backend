@@ -32,11 +32,18 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(UserPrincipal userPrincipal) {
-        return JWT.create()
+        logger.info("Print time " + expiration);
+
+        logger.info("User data " + userPrincipal.getUsername());
+        String jwtss = JWT.create()
                 .withSubject(userPrincipal.getUsername())
-                .withIssuedAt(new Date(System.currentTimeMillis()))
-                .withExpiresAt(new Date(System.currentTimeMillis() + expiration))
+                .withIssuedAt(new Date())
+                .withExpiresAt(new Date((new Date()).getTime() + expiration))
                 .sign(Algorithm.HMAC256(secret.getBytes()));
+
+        logger.info("User jwt " + jwtss);
+
+        return jwtss;
     }
 
     public String getUserNameFromJWT(String token) {
