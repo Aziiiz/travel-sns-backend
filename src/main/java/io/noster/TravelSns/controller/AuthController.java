@@ -33,12 +33,6 @@ public class AuthController {
 
     @PostMapping("login/google")
     public ResponseEntity<?> google(@RequestBody  FacebookAuthModel facebookAuthModel) {
-        try {
             return authServiceimpl.google(facebookAuthModel);
-
-        }catch (Exception e) {
-            logger.info("print error " + e.getMessage());
-            return null;
-        }
     }
 }

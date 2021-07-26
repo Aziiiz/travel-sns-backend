@@ -21,7 +21,7 @@ public class JwtTokenProvider {
     private String secret;
 
     @Value("${jwt.expiration}")
-    private String expiration;
+    private Long expiration;
 
     public String generateTokenWithPrefix(Authentication authentication) {
         return "Authorization" + generateToken(((UserPrincipal) authentication.getPrincipal()));
@@ -32,18 +32,11 @@ public class JwtTokenProvider {
     }
 
     public String generateToken(UserPrincipal userPrincipal) {
-        logger.info("Print time " + expiration);
-
-        logger.info("User data " + userPrincipal.getUsername());
-        String jwtss = JWT.create()
+        return JWT.create()
                 .withSubject(userPrincipal.getUsername())
                 .withIssuedAt(new Date())
-                .withExpiresAt(new Date((new Date()).getTime() + expiration))
+                .withExpiresAt(new Date(new Date().getTime() + expiration))
                 .sign(Algorithm.HMAC256(secret.getBytes()));
-
-        logger.info("User jwt " + jwtss);
-
-        return jwtss;
     }
 
     public String getUserNameFromJWT(String token) {

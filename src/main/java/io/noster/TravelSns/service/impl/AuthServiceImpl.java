@@ -103,7 +103,7 @@ public class AuthServiceImpl implements AuthService {
             URI location = ServletUriComponentsBuilder
                     .fromCurrentContextPath().path("/api/v1/user/{username}")
                     .buildAndExpand(googleUserModel.getFirstName()).toUri();
-
+            logger.info("URI string "+ location);
             return ResponseEntity.created(location).body(new LoginResponse(TOKEN_PREFIX + jwt));
         }else {
             final User user = userOptional.get();
