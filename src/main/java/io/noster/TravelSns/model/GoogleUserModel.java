@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class GoogleUserModel {
 
+//    @JsonProperty("sub")
     private String id;
 
     @JsonProperty("given_name")
@@ -14,5 +15,9 @@ public class GoogleUserModel {
     @JsonProperty("family_name")
     private String lastName;
 
+    @JsonProperty("name")
+    private String name;
+
+    @JsonProperty("email")
     private  String email;
 }

@@ -6,7 +6,7 @@ import lombok.*;
 import javax.persistence.*;
 
 @Entity
-@Table(name="demo_user")
+@Table(name="tb_user")
 @NoArgsConstructor
 @AllArgsConstructor
 @RequiredArgsConstructor
@@ -20,19 +20,20 @@ public class User {
     @NonNull
     private String email;
 
-    @NonNull
-    private String password;
-
     private String userRole;
+
+    @NonNull
+    private String userName;
+
 
     @NonNull
     @Enumerated(EnumType.STRING)
     private LoginMethodEnum loginMethodEnum;
 
-    public User(String email, String password, LoginMethodEnum loginMethodEnum, String role_user) {
+    public User(String email, LoginMethodEnum loginMethodEnum, String role_user, String userName) {
         this.email = email;
-        this.password = password;
         this.loginMethodEnum = loginMethodEnum;
         this.userRole = role_user;
+        this.userName = userName;
     }
 }

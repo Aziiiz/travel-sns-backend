@@ -14,11 +14,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.reactive.function.client.WebClient;
-import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableWebSecurity
-@EnableSwagger2
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
@@ -66,10 +64,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/swagger-ui.html/**").permitAll()
                 .antMatchers("/v2/api-docs").permitAll()
                 .antMatchers("/swagger-resources/**").permitAll()
-                .antMatchers("/api/profile/**").hasRole("USER")
-                .anyRequest().authenticated();
-
-
-                http.addFilter(jwtAuthorizationFilter());
+                .antMatchers("/api/profile/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .addFilter(jwtAuthorizationFilter());
     }
 }

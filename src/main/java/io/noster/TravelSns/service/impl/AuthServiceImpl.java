@@ -4,8 +4,10 @@ import io.noster.TravelSns.dao.UserMapper;
 import io.noster.TravelSns.model.*;
 import io.noster.TravelSns.payload.LoginMethodEnum;
 import io.noster.TravelSns.payload.LoginResponse;
+import io.noster.TravelSns.payload.MessageResponse;
 import io.noster.TravelSns.security.jwt.JwtTokenProvider;
 import io.noster.TravelSns.service.AuthService;
+import io.noster.common.basic.BasicResponse;
 import net.bytebuddy.utility.RandomString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.server.ResponseStatusException;
@@ -43,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
     private final String TOKEN_PREFIX  = "Bearer ";
 
     @Override
-    public ResponseEntity<?> facebook(FacebookAuthModel facebookAuthModel) {
+    public ResponseEntity<?> facebook(FacebookAuthModel facebookAuthModel)  throws ResponseStatusException {
         String templateUrl = String.format(facebookAuthUrl, facebookAuthModel.getAuthToken());
         FacebookUserModel facebookUserModel = webClient.get().uri(templateUrl).retrieve()
                 .onStatus(HttpStatus::isError, clientResponse -> {
@@ -51,11 +55,10 @@ public class AuthServiceImpl implements AuthService {
                 })
                 .bodyToMono(FacebookUserModel.class)
                 .block();
-        logger.info("Print USSER +++ ",facebookUserModel.getLastName());
         final Optional<User> userOptional = userMapper.findByEmail(facebookUserModel.getEmail());
 
         if(userOptional.isEmpty()) {
-            final User user = new User(facebookUserModel.getEmail(), new RandomString(10).nextString(), LoginMethodEnum.FACEBOOK, "ROLE_USER");
+            final User user = new User(facebookUserModel.getEmail(), LoginMethodEnum.FACEBOOK, "ROLE_USER", facebookUserModel.getFirstName());
             userMapper.save(user);
             final UserPrincipal userPrincipal = new UserPrincipal(user);
             String jwt = tokenProvider.generateToken(userPrincipal);
@@ -79,8 +82,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public ResponseEntity<?> google(FacebookAuthModel facebookAuthModel) {
-        logger.info("Print goolge token" + facebookAuthModel.getAuthToken());
-
+        logger.info("GOOGLE AUTH Token " + facebookAuthModel.getAuthToken());
         String googleUrl = String.format(googleAuthUrl, facebookAuthModel.getAuthToken());
         GoogleUserModel googleUserModel = webClient.get().uri(googleUrl).retrieve()
             .onStatus(HttpStatus::isError, clientResponse -> {
@@ -88,22 +90,20 @@ public class AuthServiceImpl implements AuthService {
             })
             .bodyToMono(GoogleUserModel.class)
             .block();
-        logger.info("Print goolge user " + googleUserModel.getEmail());
-        logger.info("Print goolge user " + googleUserModel.getFirstName());
-        logger.info("Print goolge user " + googleUserModel.getLastName());
 
+        if (googleUserModel.getEmail().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse("Email is empty"));
+        }
         final Optional<User> userOptional = userMapper.findByEmail(googleUserModel.getEmail());
 
         if(userOptional.isEmpty()) {
-            final User user = new User(googleUserModel.getEmail(), new RandomString(10).nextString(), LoginMethodEnum.GOOGLE, "ROLE_USER");
+            final User user = new User(googleUserModel.getEmail(), LoginMethodEnum.GOOGLE, "ROLE_USER", googleUserModel.getName());
             userMapper.save(user);
             final UserPrincipal userPrincipal = new UserPrincipal(user);
-            logger.info("Print goolge user " + userPrincipal.getUsername());
             String jwt = tokenProvider.generateToken(userPrincipal);
             URI location = ServletUriComponentsBuilder
                     .fromCurrentContextPath().path("/api/v1/user/{username}")
                     .buildAndExpand(googleUserModel.getFirstName()).toUri();
-            logger.info("URI string "+ location);
             return ResponseEntity.created(location).body(new LoginResponse(TOKEN_PREFIX + jwt));
         }else {
             final User user = userOptional.get();
@@ -113,6 +113,17 @@ public class AuthServiceImpl implements AuthService {
             UserPrincipal userPrincipal = new UserPrincipal(user);
             String jwt = tokenProvider.generateTokenWithPrinciple(userPrincipal);
             return ResponseEntity.ok(new LoginResponse(TOKEN_PREFIX + jwt));
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> getUserDetails(Authentication authentication) {
+        try {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+
+            return ResponseEntity.ok().body(userMapper.findByEmail(userDetails.getUsername()));
+        }catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new MessageResponse(e.getMessage()));
         }
     }
 }

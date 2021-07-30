@@ -20,8 +20,13 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getPassword() {
-        return mUser.getPassword();
+        return null;
     }
+
+//    @Override
+//    public String getPassword() {
+//        return mUser.getPassword();
+//    }
 
     @Override
     public String getUsername() {
