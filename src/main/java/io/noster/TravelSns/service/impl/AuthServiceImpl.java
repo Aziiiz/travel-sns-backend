@@ -7,8 +7,6 @@ import io.noster.TravelSns.payload.LoginResponse;
 import io.noster.TravelSns.payload.MessageResponse;
 import io.noster.TravelSns.security.jwt.JwtTokenProvider;
 import io.noster.TravelSns.service.AuthService;
-import io.noster.common.basic.BasicResponse;
-import net.bytebuddy.utility.RandomString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
