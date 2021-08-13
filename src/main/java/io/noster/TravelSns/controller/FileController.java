@@ -1,6 +1,7 @@
 package io.noster.TravelSns.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.noster.TravelSns.payload.request.FileRequest;
 import io.noster.TravelSns.service.FileService;
 import io.noster.common.basic.BasicController;
 import io.noster.common.basic.ObjectMapperInstance;
@@ -11,10 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
@@ -30,7 +28,7 @@ public class FileController extends BasicController {
 
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFiles(@RequestParam("files")MultipartFile[] files) {
+    public ResponseEntity<String> uploadFiles(@RequestBody FileRequest fileRequest) {
         long startTime = System.currentTimeMillis();
         int retSize = 0;
 
@@ -39,7 +37,7 @@ public class FileController extends BasicController {
         ObjectMapper mapper = ObjectMapperInstance.getInstance().getMapper();
         try {
             log.debug("[" + retSize+ "]............ Start(");
-            BasicListResponse res = fileService.uploadFiles(files);
+            BasicListResponse res = fileService.uploadFiles(fileRequest);
             resString = mapper.writeValueAsString(res);
         } catch (Exception e) {
             resStatus = HttpStatus.INTERNAL_SERVER_ERROR;

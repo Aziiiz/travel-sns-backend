@@ -1,6 +1,7 @@
 package io.noster.TravelSns.service.impl;
 
 import io.noster.TravelSns.model.FileInfo;
+import io.noster.TravelSns.payload.request.FileRequest;
 import io.noster.TravelSns.service.FileService;
 import io.noster.common.bbs.BasicListResponse;
 import org.springframework.stereotype.Service;
@@ -18,11 +19,11 @@ public class FileServiceImpl implements FileService {
 
     private final Path root = Paths.get("uploads");
     @Override
-    public BasicListResponse uploadFiles(MultipartFile[] files) {
+    public BasicListResponse uploadFiles(FileRequest fileRequest) {
         BasicListResponse res = new BasicListResponse();
         try {
             List<String> fileNames = new ArrayList<>();
-            Arrays.asList(files).stream().forEach(file-> {
+            Arrays.asList(fileRequest.getFile()).stream().forEach(file-> {
                 save(file);
                 fileNames.add(file.getOriginalFilename());
             });

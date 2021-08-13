@@ -21,8 +21,4 @@ public class ProfileController {
         UserDetails principal = (UserDetails) authentication.getPrincipal();
         return principal.getUsername();
     }
-
-
-
-
 }
