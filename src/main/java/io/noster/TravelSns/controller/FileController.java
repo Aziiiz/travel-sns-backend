@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @Api(tags={"FILE API"})
-@RequestMapping("/api/file")
+@RequestMapping("/api/place")
 public class FileController extends BasicController {
 
     @Autowired
@@ -28,7 +28,7 @@ public class FileController extends BasicController {
 
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadFiles(@RequestBody FileRequest fileRequest) {
+    public ResponseEntity<String> uploadFiles(@ModelAttribute FileRequest fileRequest) {
         long startTime = System.currentTimeMillis();
         int retSize = 0;
 
@@ -36,14 +36,17 @@ public class FileController extends BasicController {
         HttpStatus resStatus = HttpStatus.OK;
         ObjectMapper mapper = ObjectMapperInstance.getInstance().getMapper();
         try {
-            log.debug("[" + retSize+ "]............ Start(");
+            log.info("[" + startTime+ "]............ Start(");
             BasicListResponse res = fileService.uploadFiles(fileRequest);
             resString = mapper.writeValueAsString(res);
         } catch (Exception e) {
             resStatus = HttpStatus.INTERNAL_SERVER_ERROR;
             resString = e.getMessage();
+        } finally {
+            log.info("[" + (System.currentTimeMillis() - startTime)+ "]............ End)");
+
         }
-        return new ResponseEntity<String>(resString, resStatus);
+        return new ResponseEntity<>(resString, resStatus);
     }
 
 }
